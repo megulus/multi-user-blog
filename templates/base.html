@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+    <title>Templates</title>
+</head>
+
+<style>
+    body {
+        font-family: sans-serif;
+        width: 800px;
+        margin: 0 auto;
+        padding: 10px;
+    }
+
+    .error {
+        color: red;
+    }
+
+    label {
+        display: block;
+        font-size: 20px;
+    }
+
+    input[type="text"] {
+        width: 400px;
+        font-size: 20px;
+        padding: 2px;
+    }
+
+    textarea {
+        width: 400px;
+        height: 200px;
+        font-size: 16px;
+    }
+
+    input[type="submit"] {
+        font-size: 24px;
+    }
+
+    hr {
+        margin: 20px auto;
+    }
+
+    .blog-post {
+        margin-top: 20px;
+    }
+
+    li {
+        list-style: none;
+    }
+</style>
+
+<body style="margin: 0">
+<h1>A Blog</h1>
+<nav>
+    <ul>
+        <li><a href="/blog">Home</a></li>
+        <li><a href="/blog/newpost">Create New Post</a></li>
+    </ul>
+</nav>
+<hr>
+{% block content %}
+{% endblock %}
+</body>
+
+</html>
