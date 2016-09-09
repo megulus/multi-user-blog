@@ -59,9 +59,6 @@ class BlogMainHandler(Handler):
     def render_front(self, posts=''):
         logging.debug(posts)
         posts = db.GqlQuery('SELECT * FROM BlogPost ORDER BY created')
-        logging.debug(posts)
-        for post in posts:
-            logging.debug(post.subject)
         self.render('main.html', posts=posts)
 
 
@@ -77,21 +74,20 @@ class NewPostHandler(Handler):
     def get(self, trailingslash=None):
         self.write_form()
 
-    def post(self):
+    def post(self, otherarg):
+        logging.debug(otherarg)
         subject = self.request.get("subject")
         content = self.request.get("content")
         logging.debug(subject)
         logging.debug(content)
 
         if subject and content:
-            #postnum = len(index) + 1
-            postnum = BlogPost.all().count()
+            postnum = BlogPost.all().count() + 1
             logging.debug(postnum)
             index_postnum = '{num:04d}'.format(num=postnum)
             p = BlogPost(subject=subject, content=content, postnum=str(index_postnum))
             p.put()
             #id = p.key().id()
-            #index[index_postnum] = id
             url = '/blog/%s' % index_postnum
             self.redirect(url)
         else:
@@ -103,14 +99,11 @@ class PermalinkHandler(Handler):
     def render_post(self, postnum=''):
         POST_RE = re.compile('[0-9]{4}$')
         postnum = re.search(POST_RE, self.request.path).group(0)
-        logging.debug(postnum)
-        post_key = db.Key.from_path('BlogPost', postnum)
-        post = db.get(post_key)
-        #post_id = index.get(postnum)
-        #logging.debug(post_id)
-        #logging.debug(BlogPost.get_by_id(post_id))
-        #post = BlogPost.get_by_id(post_id)
-        self.render("singlepost.html", post=post)
+        #post_key = db.Key.from_path('BlogPost', postnum)
+        #post = db.get(post_key)
+        post = BlogPost.all().filter("postnum =", postnum)
+        logging.debug(post[0].subject)
+        self.render("singlepost.html", post=post[0])
 
     def get(self, postnum=None, trailingslash=None):
         self.render_post(postnum=postnum)
@@ -123,11 +116,3 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/blog/<:\d{4}><:/?$>', handler=PermalinkHandler)
 ], debug=True)
 
-def make_index():
-    index = {}
-    posts = db.GqlQuery('SELECT * FROM BlogPost')
-    for item in posts:
-        index[item.postnum] = item.ID
-    return index
-
-#index = make_index()

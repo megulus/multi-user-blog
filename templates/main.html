@@ -1,12 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!--<a href="/blog/newpost">Create New Post</a>-->
 {% if posts %}
 <ul>
     {% for item in posts %}
     <li class="blog-post">
-        <h2><a href="{{ item.id }}">{{ item.subject }}</a></h2>
+        <h2><a href="/blog/{{ item.postnum }}">{{ item.subject }}</a></h2>
         <p>{{ item.content }}</p>
     </li>
     {% endfor %}
