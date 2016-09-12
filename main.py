@@ -20,6 +20,7 @@ import webapp2
 import os
 import jinja2
 import re
+import time
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -57,8 +58,9 @@ class MainHandler(webapp2.RequestHandler):
 
 class BlogMainHandler(Handler):
     def render_front(self, posts=''):
-        logging.debug(posts)
         posts = db.GqlQuery('SELECT * FROM BlogPost ORDER BY created')
+        for post in posts:
+            logging.debug(post.subject)
         self.render('main.html', posts=posts)
 
 
@@ -82,13 +84,12 @@ class NewPostHandler(Handler):
         logging.debug(content)
 
         if subject and content:
-            postnum = BlogPost.all().count() + 1
-            logging.debug(postnum)
-            index_postnum = '{num:04d}'.format(num=postnum)
-            p = BlogPost(subject=subject, content=content, postnum=str(index_postnum))
+            next_count = BlogPost.all().count() + 1
+            postnum = '{num:04d}'.format(num=next_count)
+            p = BlogPost(subject=subject, content=content, postnum=str(postnum))
             p.put()
             #id = p.key().id()
-            url = '/blog/%s' % index_postnum
+            url = '/blog/%s' % postnum
             self.redirect(url)
         else:
             error = "Please enter both title and content!"
@@ -99,11 +100,16 @@ class PermalinkHandler(Handler):
     def render_post(self, postnum=''):
         POST_RE = re.compile('[0-9]{4}$')
         postnum = re.search(POST_RE, self.request.path).group(0)
+        logging.debug(postnum)
         #post_key = db.Key.from_path('BlogPost', postnum)
         #post = db.get(post_key)
-        post = BlogPost.all().filter("postnum =", postnum)
-        logging.debug(post[0].subject)
-        self.render("singlepost.html", post=post[0])
+        try:
+            posts = BlogPost.all().filter("postnum =", postnum)
+            self.render("singlepost.html", post=posts[0])
+        except IndexError:
+            time.sleep(0.1)
+            posts = BlogPost.all().filter("postnum =", postnum)
+            self.render("singlepost.html", post=posts[0])
 
     def get(self, postnum=None, trailingslash=None):
         self.render_post(postnum=postnum)
